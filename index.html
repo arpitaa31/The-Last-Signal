@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE LAST SIGNAL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="space" aria-label="A simple scroll-based Three.js space journey"></canvas>
+
+  <nav id="nav-title">THE LAST SIGNAL</nav>
+
+  <main id="story">
+    <section class="story-box intro">
+      <p class="small-title">FIRST CONTACT</p>
+      <h1>THE LAST<br />SIGNAL</h1>
+      <p>A strange signal was detected far away from Earth.</p>
+      <p class="scroll-copy">Scroll to follow it.</p>
+    </section>
+
+    <section class="story-box earth-leave">
+      <p class="small-title">LEAVING EARTH</p>
+      <h2>Out into space</h2>
+      <p>The signal did not match anything we had received before.</p>
+    </section>
+
+    <section class="story-box planet">
+      <p class="small-title">UNKNOWN PLANET</p>
+      <h2>Not on any map</h2>
+      <p>The signal seemed to be coming from a planet that was not on any map.</p>
+    </section>
+
+    <section class="story-box closer">
+      <p class="small-title">GETTING CLOSER</p>
+      <h2>Still there</h2>
+      <p>The signal became stronger as we travelled deeper into space.</p>
+    </section>
+
+    <section class="story-box source">
+      <p class="small-title">THE SOURCE</p>
+      <h2>It came from home.</h2>
+      <p>The signal was coming from Earth. But it was sent many years in the future.</p>
+      <button class="replay" id="replay">REPLAY JOURNEY</button>
+    </section>
+  </main>
+
+  <div class="scroll-text" id="scroll-text">SCROLL TO FOLLOW THE SIGNAL</div>
+  <div class="fallback" id="fallback"><h1>THE LAST SIGNAL</h1><p>The 3D scene could not start in this browser, but the story can still be read by scrolling.</p></div>
+
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+
+    // create the scene
+    const canvas = document.getElementById('space');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#030714');
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const mobile = window.innerWidth < 700;
+    const light = new THREE.DirectionalLight('#dcecff', 2.2);
+    light.position.set(-6, 7, 8);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight('#7797c4', 0.8));
+
+    // create stars
+    const starCount = mobile ? 500 : 1100;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 70;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+      starPositions[i * 3 + 2] = -120 + Math.random() * 145;
+    }
+    const starGeometry = new THREE.BufferGeometry();
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: '#dbeaff', size: 0.06, sizeAttenuation: true }));
+    scene.add(stars);
+
+    // add earth
+    const earth = new THREE.Group();
+    scene.add(earth);
+    const earthBall = new THREE.Mesh(
+      new THREE.SphereGeometry(2.5, mobile ? 24 : 36, mobile ? 16 : 24),
+      new THREE.MeshPhongMaterial({ color: '#24517b', shininess: 15 })
+    );
+    earth.add(earthBall);
+    const earthLines = new THREE.Mesh(
+      new THREE.SphereGeometry(2.56, mobile ? 18 : 28, mobile ? 12 : 18),
+      new THREE.MeshBasicMaterial({ color: '#88dce8', wireframe: true, transparent: true, opacity: 0.16 })
+    );
+    earth.add(earthLines);
+
+    const moon = new THREE.Mesh(
+      new THREE.SphereGeometry(0.45, 16, 12),
+      new THREE.MeshPhongMaterial({ color: '#aab1b6' })
+    );
+    moon.position.set(4, 0.8, -1.2);
+    earth.add(moon);
+
+    // a small satellite near earth
+    const satellite = new THREE.Group();
+    const satBody = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.35, 0.45), new THREE.MeshPhongMaterial({ color: '#c3d5e5' }));
+    satellite.add(satBody);
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.24, 0.05), new THREE.MeshPhongMaterial({ color: '#376987' }));
+    satellite.add(panel);
+    satellite.position.set(-3.7, 1.4, 0);
+    earth.add(satellite);
+
+    // unknown planet
+    const unknownPlanet = new THREE.Group();
+    unknownPlanet.position.set(0, 0, -43);
+    scene.add(unknownPlanet);
+    const planetBall = new THREE.Mesh(
+      new THREE.SphereGeometry(3.2, mobile ? 24 : 36, mobile ? 16 : 24),
+      new THREE.MeshPhongMaterial({ color: '#343551', shininess: 8 })
+    );
+    unknownPlanet.add(planetBall);
+    const planetRing = new THREE.Mesh(
+      new THREE.RingGeometry(4.1, 4.2, 64),
+      new THREE.MeshBasicMaterial({ color: '#6797a9', transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+    );
+    planetRing.rotation.x = Math.PI / 2;
+    planetRing.rotation.z = 0.35;
+    unknownPlanet.add(planetRing);
+    const planetMoon = new THREE.Mesh(new THREE.SphereGeometry(0.58, 14, 10), new THREE.MeshPhongMaterial({ color: '#64626f' }));
+    planetMoon.position.set(-5, 1, 0);
+    unknownPlanet.add(planetMoon);
+
+    // final signal object
+    const signalSource = new THREE.Group();
+    signalSource.position.set(0, 0, -82);
+    scene.add(signalSource);
+    const sourceBall = new THREE.Mesh(
+      new THREE.SphereGeometry(4.2, mobile ? 26 : 42, mobile ? 18 : 28),
+      new THREE.MeshPhongMaterial({ color: '#101a2d', emissive: '#0d3542', emissiveIntensity: 0.8, shininess: 30 })
+    );
+    signalSource.add(sourceBall);
+    const sourceRing = new THREE.Mesh(
+      new THREE.RingGeometry(5.1, 5.25, 64),
+      new THREE.MeshBasicMaterial({ color: '#8bdde4', transparent: true, opacity: 0.65, side: THREE.DoubleSide })
+    );
+    sourceRing.rotation.x = Math.PI / 2;
+    signalSource.add(sourceRing);
+    const signalDot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.45, 16, 12),
+      new THREE.MeshBasicMaterial({ color: '#b4fbff' })
+    );
+    signalDot.position.z = 4.1;
+    signalSource.add(signalDot);
+
+    let targetProgress = 0;
+    let scrollProgress = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+    const storyBoxes = document.querySelectorAll('.story-box');
+    const nav = document.getElementById('nav-title');
+    const scrollText = document.getElementById('scroll-text');
+
+    // move camera while scrolling
+    function updateCamera() {
+      let x = 0;
+      let y = 1.5;
+      let z = 12;
+      let lookZ = 0;
+
+      if (scrollProgress < 0.33) {
+        const t = scrollProgress / 0.33;
+        x = t * 1.5;
+        z = 12 - t * 30;
+        lookZ = -t * 25;
+      } else if (scrollProgress < 0.66) {
+        const t = (scrollProgress - 0.33) / 0.33;
+        x = 1.5 - t * 1.5;
+        z = -18 - t * 28;
+        lookZ = -25 - t * 20;
+      } else {
+        const t = (scrollProgress - 0.66) / 0.34;
+        y = 1.5 - t * 0.5;
+        z = -46 - t * 28;
+        lookZ = -45 - t * 37;
+      }
+
+      camera.position.set(x + mouseX * 0.25, y + mouseY * 0.15, z);
+      camera.lookAt(0, 0, lookZ);
+    }
+
+    // animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      scrollProgress += (targetProgress - scrollProgress) * 0.045;
+      earth.rotation.y += 0.0015;
+      earthLines.rotation.y += 0.0025;
+      satellite.rotation.y += 0.01;
+      moon.position.x = 4 + Math.cos(Date.now() * 0.0003) * 0.35;
+      unknownPlanet.rotation.y += 0.001;
+      planetRing.rotation.z += 0.001;
+      signalSource.rotation.y += 0.002;
+      sourceRing.rotation.z -= 0.002;
+      stars.rotation.y = mouseX * 0.02;
+      updateCamera();
+      renderer.render(scene, camera);
+    }
+
+    // show sections as they enter the screen
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) entry.target.classList.add('show');
+      });
+    }, { threshold: 0.35 });
+    storyBoxes.forEach(function (box) { observer.observe(box); });
+
+    window.addEventListener('scroll', function () {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      targetProgress = maxScroll ? window.scrollY / maxScroll : 0;
+      nav.classList.toggle('faded', window.scrollY > 80);
+      scrollText.style.opacity = window.scrollY > 50 ? '0' : '1';
+    }, { passive: true });
+
+    window.addEventListener('pointermove', function (event) {
+      mouseX = event.clientX / window.innerWidth - 0.5;
+      mouseY = -(event.clientY / window.innerHeight - 0.5);
+    });
+
+    // resize the canvas
+    window.addEventListener('resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
+    });
+
+    document.getElementById('replay').addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('error', function () {
+      document.getElementById('fallback').style.display = 'block';
+    });
+
+    animate();
+  </script>
+</body>
+</html>
