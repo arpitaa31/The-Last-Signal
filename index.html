@@ -79,8 +79,21 @@
     const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: '#dbeaff', size: 0.06, sizeAttenuation: true }));
     scene.add(stars);
 
+    // a few distant comets to give the empty background some detail
+    const cometMaterial = new THREE.LineBasicMaterial({ color: '#b8d7ed', transparent: true, opacity: 0.45 });
+    [
+      [-15, 9, -35, 2.5], [13, -7, -55, 2], [-11, -8, -77, 2.8], [16, 6, -91, 1.7]
+    ].forEach(function (comet) {
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(comet[0], comet[1], comet[2]),
+        new THREE.Vector3(comet[0] - comet[3], comet[1] + comet[3] * 0.35, comet[2] + 0.8)
+      ]);
+      scene.add(new THREE.Line(geometry, cometMaterial));
+    });
+
     // add earth
     const earth = new THREE.Group();
+    earth.position.set(-2.6, 0.4, 0);
     scene.add(earth);
     const earthBall = new THREE.Mesh(
       new THREE.SphereGeometry(2.5, mobile ? 24 : 36, mobile ? 16 : 24),
@@ -111,7 +124,7 @@
 
     // unknown planet
     const unknownPlanet = new THREE.Group();
-    unknownPlanet.position.set(0, 0, -43);
+    unknownPlanet.position.set(2.8, -0.2, -43);
     scene.add(unknownPlanet);
     const planetBall = new THREE.Mesh(
       new THREE.SphereGeometry(3.2, mobile ? 24 : 36, mobile ? 16 : 24),
@@ -125,81 +138,77 @@
     planetRing.rotation.x = Math.PI / 2;
     planetRing.rotation.z = 0.35;
     unknownPlanet.add(planetRing);
+    // rough fragments caught in the planet's ring path
+    const debrisMaterial = new THREE.MeshPhongMaterial({ color: '#777a7e', flatShading: true });
+    for (let i = 0; i < 34; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 4.45 + Math.random() * 2.1;
+      const size = 0.05 + Math.random() * 0.16;
+      const rock = new THREE.Mesh(new THREE.IcosahedronGeometry(size, 0), debrisMaterial);
+      rock.position.set(Math.cos(angle) * distance, (Math.random() - 0.5) * 0.65, Math.sin(angle) * distance);
+      rock.rotation.set(Math.random() * 2, Math.random() * 2, Math.random() * 2);
+      unknownPlanet.add(rock);
+    }
     const planetMoon = new THREE.Mesh(new THREE.SphereGeometry(0.58, 14, 10), new THREE.MeshPhongMaterial({ color: '#64626f' }));
     planetMoon.position.set(-5, 1, 0);
     unknownPlanet.add(planetMoon);
 
-    // final signal object
+    // final planet
     const signalSource = new THREE.Group();
-    signalSource.position.set(0, 0, -82);
+    signalSource.position.set(-2.7, 0.25, -76);
     scene.add(signalSource);
     const sourceBall = new THREE.Mesh(
       new THREE.SphereGeometry(4.2, mobile ? 26 : 42, mobile ? 18 : 28),
-      new THREE.MeshPhongMaterial({ color: '#101a2d', emissive: '#0d3542', emissiveIntensity: 0.8, shininess: 30 })
+      new THREE.MeshPhongMaterial({ color: '#75519a', emissive: '#170d25', emissiveIntensity: 0.35, shininess: 8 })
     );
     signalSource.add(sourceBall);
-    const sourceRing = new THREE.Mesh(
-      new THREE.RingGeometry(5.1, 5.25, 64),
-      new THREE.MeshBasicMaterial({ color: '#8bdde4', transparent: true, opacity: 0.65, side: THREE.DoubleSide })
+    const sourceLines = new THREE.Mesh(
+      new THREE.SphereGeometry(4.27, mobile ? 20 : 30, mobile ? 14 : 20),
+      new THREE.MeshBasicMaterial({ color: '#c8a8e0', wireframe: true, transparent: true, opacity: 0.13 })
     );
-    sourceRing.rotation.x = Math.PI / 2;
-    signalSource.add(sourceRing);
-    const signalDot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.45, 16, 12),
-      new THREE.MeshBasicMaterial({ color: '#b4fbff' })
+    signalSource.add(sourceLines);
+    const finalSatellite = new THREE.Group();
+    const finalSatelliteBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.34, 0.28, 0.34),
+      new THREE.MeshPhongMaterial({ color: '#cbd4df' })
     );
-    signalDot.position.z = 4.1;
-    signalSource.add(signalDot);
+    const finalSatellitePanel = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.16, 0.035),
+      new THREE.MeshPhongMaterial({ color: '#514a83' })
+    );
+    const finalSatelliteDish = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshPhongMaterial({ color: '#dbe5ee', side: THREE.DoubleSide })
+    );
+    finalSatelliteDish.rotation.x = Math.PI;
+    finalSatelliteDish.position.y = 0.22;
+    finalSatellite.add(finalSatelliteBody, finalSatellitePanel, finalSatelliteDish);
+    finalSatellite.position.set(5.3, 1.4, -0.8);
+    finalSatellite.rotation.z = -0.25;
+    signalSource.add(finalSatellite);
 
     let targetProgress = 0;
     let scrollProgress = 0;
-    let mouseX = 0;
-    let mouseY = 0;
     const storyBoxes = document.querySelectorAll('.story-box');
     const nav = document.getElementById('nav-title');
     const scrollText = document.getElementById('scroll-text');
 
     // move camera while scrolling
     function updateCamera() {
-      let x = 0;
-      let y = 1.5;
-      let z = 12;
-      let lookZ = 0;
-
-      if (scrollProgress < 0.33) {
-        const t = scrollProgress / 0.33;
-        x = t * 1.5;
-        z = 12 - t * 30;
-        lookZ = -t * 25;
-      } else if (scrollProgress < 0.66) {
-        const t = (scrollProgress - 0.33) / 0.33;
-        x = 1.5 - t * 1.5;
-        z = -18 - t * 28;
-        lookZ = -25 - t * 20;
-      } else {
-        const t = (scrollProgress - 0.66) / 0.34;
-        y = 1.5 - t * 0.5;
-        z = -46 - t * 28;
-        lookZ = -45 - t * 37;
-      }
-
-      camera.position.set(x + mouseX * 0.25, y + mouseY * 0.15, z);
-      camera.lookAt(0, 0, lookZ);
+      const z = 12 - scrollProgress * 80;
+      camera.position.set(0, 1.5, z);
+      camera.lookAt(0, 0, z - 12);
     }
 
     // animation loop
     function animate() {
       requestAnimationFrame(animate);
       scrollProgress += (targetProgress - scrollProgress) * 0.045;
-      earth.rotation.y += 0.0015;
-      earthLines.rotation.y += 0.0025;
-      satellite.rotation.y += 0.01;
-      moon.position.x = 4 + Math.cos(Date.now() * 0.0003) * 0.35;
-      unknownPlanet.rotation.y += 0.001;
-      planetRing.rotation.z += 0.001;
-      signalSource.rotation.y += 0.002;
-      sourceRing.rotation.z -= 0.002;
-      stars.rotation.y = mouseX * 0.02;
+      earth.rotation.y += 0.0012;
+      unknownPlanet.rotation.y -= 0.00075;
+      signalSource.rotation.y += 0.00055;
+      stars.rotation.y += 0.00003;
+      stars.position.x = Math.sin(Date.now() * 0.00008) * 0.25;
       updateCamera();
       renderer.render(scene, camera);
     }
@@ -218,11 +227,6 @@
       nav.classList.toggle('faded', window.scrollY > 80);
       scrollText.style.opacity = window.scrollY > 50 ? '0' : '1';
     }, { passive: true });
-
-    window.addEventListener('pointermove', function (event) {
-      mouseX = event.clientX / window.innerWidth - 0.5;
-      mouseY = -(event.clientY / window.innerHeight - 0.5);
-    });
 
     // resize the canvas
     window.addEventListener('resize', function () {
