@@ -15,7 +15,7 @@ body {
   overflow-x: hidden;
   background: var(--bg);
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "DM Mono", "Courier New", monospace;
 }
 
 #space {
@@ -33,9 +33,10 @@ nav {
   width: 100%;
   padding: 18px 8vw;
   color: white;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 2px;
+  font-family: "Michroma", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: .16em;
   text-shadow: 0 1px 4px #000;
   transition: opacity .3s;
 }
@@ -62,12 +63,12 @@ nav.faded { opacity: .55; }
 }
 
 .story-box.show { opacity: 1; transform: translateY(0); }
-.story-box p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.story-box p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.65; }
 .intro .scroll-copy { margin-top: 10px; }
-.story-box h1, .story-box h2 { margin: 0 0 12px; color: white; font-family: Arial, Helvetica, sans-serif; font-weight: normal; }
-.story-box h1 { font-size: clamp(38px, 6vw, 56px); line-height: 1; }
-.story-box h2 { font-size: clamp(26px, 4vw, 34px); }
-.small-title { margin: 0 0 10px !important; color: var(--accent) !important; font-size: 10px !important; font-weight: bold; letter-spacing: 1.5px; }
+.story-box h1, .story-box h2 { margin: 0 0 12px; color: white; }
+.story-box h1 { font-family: "Monoton", sans-serif; font-size: clamp(38px, 5.4vw, 56px); font-weight: 400; line-height: 1.13; letter-spacing: .025em; text-shadow: 0 0 22px rgba(136, 220, 232, .22); }
+.story-box h2 { font-family: "Michroma", sans-serif; font-size: clamp(21px, 3vw, 29px); font-weight: 400; line-height: 1.35; letter-spacing: -.025em; }
+.small-title { margin: 0 0 10px !important; color: var(--accent) !important; font-size: 10px !important; font-weight: 500; letter-spacing: .15em; }
 
 .intro { top: 16vh; right: 9vw; }
 .earth-leave { top: 130vh; right: 9vw; }
@@ -82,8 +83,9 @@ nav.faded { opacity: .55; }
   left: 50%;
   transform: translateX(-50%);
   color: #c7dbe7;
-  font-size: 11px;
-  letter-spacing: 1px;
+  font-family: "Michroma", sans-serif;
+  font-size: 9px;
+  letter-spacing: .12em;
   text-shadow: 0 1px 3px #000;
   animation: float 1.8s ease-in-out infinite;
   transition: opacity .3s;
@@ -99,8 +101,8 @@ nav.faded { opacity: .55; }
   border: 1px solid #7eb7d0;
   border-radius: 2px;
   cursor: pointer;
-  font: 12px Arial, sans-serif;
-  letter-spacing: 1px;
+  font: 400 10px "Michroma", sans-serif;
+  letter-spacing: .08em;
   pointer-events: auto;
 }
 
@@ -109,13 +111,15 @@ nav.faded { opacity: .55; }
 .fallback p { max-width: 480px; color: var(--muted); line-height: 1.6; }
 
 @media (max-width: 700px) {
-  nav { padding: 16px 7vw; font-size: 11px; }
+  nav { padding: 16px 7vw; font-size: 9px; }
   .story-box { width: 84vw; padding: 14px; }
   .intro, .planet, .source { left: 8vw; }
   .intro { right: auto; }
   .earth-leave, .closer { right: 8vw; }
   .intro { top: 14vh; }.earth-leave { top: 130vh; }.planet { top: 265vh; }.closer { top: 390vh; }.source { top: 500vh; }
-  .story-box p { font-size: 14px; }
+  .story-box p { font-size: 13px; }
+  .story-box h1 { font-size: clamp(31px, 10vw, 40px); }
+  .story-box h2 { font-size: clamp(19px, 6vw, 24px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
